@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Services & Products - DataMind{% endblock %}
+
+{% block content %}
+<div class="services-header center-align fade-in">
+    <h1 class="page-title">Enterprise <span class="gradient-text">AutoML</span> Solutions</h1>
+    <p class="page-subtitle">From structured data to advanced computer vision, we handle the infrastructure so you can focus on insights.</p>
+</div>
+
+<div class="services-grid slide-up">
+    <!-- Service 1 -->
+    <div class="glass-card service-card">
+        <div class="service-icon">👁️‍🗨️</div>
+        <h3>Vision Platform</h3>
+        <p>Pre-trained CNN models and zero-shot image classification. Access state-of-the-art MobileNetV2, ResNet, and Vision Transformers via our high-speed API.</p>
+        <a href="/" class="service-link">Try Demo →</a>
+    </div>
+
+    <!-- Service 2 -->
+    <div class="glass-card service-card">
+        <div class="service-icon">📊</div>
+        <h3>AutoML Tabular</h3>
+        <p>Upload CSV or unstructured text. Our AutoML systems automatically perform feature engineering, hyperparameter tuning, and ensemble modeling.</p>
+        <a href="/" class="service-link">Upload Dataset →</a>
+    </div>
+
+    <!-- Service 3 -->
+    <div class="glass-card service-card">
+        <div class="service-icon">⚡</div>
+        <h3>Edge Deployment</h3>
+        <p>Export your tailored models directly to ONNX, TensorFlow Lite, or CoreML. Optimize models for latency, energy usage, and size instantly.</p>
+        <a href="#" class="service-link">Learn More →</a>
+    </div>
+</div>
+{% endblock %}

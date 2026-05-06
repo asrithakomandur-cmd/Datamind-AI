@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}DataMind - AutoML as a Service{% endblock %}
+
+{% block content %}
+<section class="hero-section center-align fade-in">
+    <div class="pill-badge">✨ Try DataMind Engine 2.0</div>
+    <h1 class="hero-title">AutoML for the <span class="gradient-text">Modern Web</span></h1>
+    <p class="hero-subtitle">Upload your datasets or test our pre-trained MobileNetV2 image classification models instantly without writing a single line of code.</p>
+</section>
+
+<div class="dashboard-grid">
+    <!-- Dataset Upload Section -->
+    <div class="glass-card slide-up" style="animation-delay: 0.1s;">
+        <div class="card-header">
+            <h3><span class="icon">📊</span> Upload Dataset</h3>
+            <p>Train custom models by providing your raw data.</p>
+        </div>
+        <div class="card-body">
+            <div class="upload-area" id="dataset-drop-zone">
+                <div class="upload-icon">📁</div>
+                <p>Drag & drop dataset (CSV, ZIP) or <span class="highlight">browse</span></p>
+                <input type="file" id="datasetInput" class="file-input" accept=".cvs,.zip,.tar.gz,application/zip">
+            </div>
+            <div id="dataset-status" class="status-message"></div>
+            <button class="btn btn-primary w-100 mt-4" id="uploadDatasetBtn">Upload to Cloud</button>
+        </div>
+    </div>
+
+    <!-- Image Prediction Section -->
+    <div class="glass-card slide-up" style="animation-delay: 0.2s;">
+        <div class="card-header">
+            <h3><span class="icon">🖼️</span> Vision Demo</h3>
+            <p>Test our real-time MobileNetV2 classification.</p>
+        </div>
+        <div class="card-body">
+            <div class="upload-area" id="image-drop-zone">
+                <div class="upload-icon">📸</div>
+                <p>Drag & drop an image or <span class="highlight">browse</span></p>
+                <input type="file" id="imageInput" class="file-input" accept="image/jpeg,image/png,image/jpg">
+            </div>
+            
+            <div class="preview-container hidden" id="preview-container">
+                <img id="image-preview" src="" alt="Preview">
+            </div>
+            
+            <button class="btn btn-accent w-100 mt-4" id="predictBtn">Run Prediction</button>
+        </div>
+    </div>
+</div>
+
+<!-- Results Modal -->
+<div id="results-modal" class="glass-modal hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Analysis Complete</h3>
+            <button class="close-btn" id="closeModal">×</button>
+        </div>
+        <div class="results-layout">
+            <div class="results-image-wrapper">
+                <img id="result-img" src="" alt="Result Image">
+            </div>
+            <div class="results-list-wrapper">
+                <h4>Predictions</h4>
+                <ul id="predictions-list" class="predictions-list">
+                    <!-- Results populated by JS -->
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Elements
+    const datasetInput = document.getElementById('datasetInput');
+    const uploadDatasetBtn = document.getElementById('uploadDatasetBtn');
+    const datasetStatus = document.getElementById('datasetStatus');
+    
+    const imageInput = document.getElementById('imageInput');
+    const predictBtn = document.getElementById('predictBtn');
+    const previewContainer = document.getElementById('preview-container');
+    const imagePreview = document.getElementById('image-preview');
+    
+    const resultsModal = document.getElementById('results-modal');
+    const closeModal = document.getElementById('closeModal');
+    const resultImg = document.getElementById('result-img');
+    const predictionsList = document.getElementById('predictions-list');
+
+    // UI Feedback for Dataset
+    datasetInput.addEventListener('change', (e) => {
+        if(e.target.files.length > 0) {
+            document.getElementById('dataset-drop-zone').classList.add('has-file');
+            document.querySelector('#dataset-drop-zone p').innerHTML = `Selected: <b>${e.target.files[0].name}</b>`;
+        }
+    });
+
+    // Upload Dataset
+    uploadDatasetBtn.addEventListener('click', async () => {
+        const file = datasetInput.files[0];
+        const statusEl = document.getElementById('dataset-status');
+        if (!file) {
+            statusEl.innerHTML = '<span class="error">Please select a dataset file.</span>';
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('dataset', file);
+        
+        const originalText = uploadDatasetBtn.innerText;
+        uploadDatasetBtn.innerText = 'Uploading...';
+        uploadDatasetBtn.disabled = true;
+
+        try {
+            const response = await fetch('/predict', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            
+            if(data.success) {
+                statusEl.innerHTML = `<span class="success">${data.message}</span>`;
+            } else {
+                statusEl.innerHTML = `<span class="error">${data.error}</span>`;
+            }
+        } catch (err) {
+            statusEl.innerHTML = '<span class="error">Connection failed. Try again.</span>';
+        } finally {
+            uploadDatasetBtn.innerText = originalText;
+            uploadDatasetBtn.disabled = false;
+            setTimeout(() => { statusEl.innerHTML = ''; datasetInput.value=''; document.querySelector('#dataset-drop-zone p').innerHTML='Drag & drop dataset (CSV, ZIP) or <span class="highlight">browse</span>'; document.getElementById('dataset-drop-zone').classList.remove('has-file'); }, 5000);
+        }
+    });
+
+    // Image Preview
+    imageInput.addEventListener('change', (e) => {
+        if(e.target.files.length > 0) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imagePreview.src = e.target.result;
+                previewContainer.classList.remove('hidden');
+                document.getElementById('image-drop-zone').classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Reset preview
+    imagePreview.addEventListener('click', () => {
+        imageInput.value = '';
+        previewContainer.classList.add('hidden');
+        document.getElementById('image-drop-zone').classList.remove('hidden');
+    });
+
+    // Predict Image
+    predictBtn.addEventListener('click', async () => {
+        const file = imageInput.files[0];
+        if (!file) {
+            alert("Select an image first!");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('image', file);
+        
+        const originalText = predictBtn.innerText;
+        predictBtn.innerHTML = '<span class="spinner"></span> Analyzing...';
+        predictBtn.disabled = true;
+
+        try {
+            const response = await fetch('/predict', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            
+            if(data.success) {
+                // Show modal
+                resultImg.src = '/' + data.image_path;
+                predictionsList.innerHTML = '';
+                
+                data.results.forEach((res, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'prediction-item';
+                    li.innerHTML = `
+                        <div class="pred-info">
+                            <span class="pred-label">${res.class}</span>
+                            <span class="pred-val">${res.confidence.toFixed(2)}%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${res.confidence}%"></div>
+                        </div>
+                    `;
+                    predictionsList.appendChild(li);
+                });
+                
+                resultsModal.classList.remove('hidden');
+            } else {
+                alert(data.error);
+            }
+        } catch (err) {
+            alert('Failed to connect to the prediction API.');
+        } finally {
+            predictBtn.innerText = originalText;
+            predictBtn.disabled = false;
+        }
+    });
+
+    closeModal.addEventListener('click', () => {
+        resultsModal.classList.add('hidden');
+    });
+</script>
+{% endblock %}

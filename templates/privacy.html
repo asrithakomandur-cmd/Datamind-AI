@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Policy - DataMind AutoML{% endblock %}
+
+{% block content %}
+<div class="document-container fade-in">
+    <div class="glass-card doc-card">
+        <h1 class="document-title">Privacy Policy & Policy Terms</h1>
+        <p class="last-updated">Last Updated: April 2026</p>
+        
+        <div class="document-body">
+            <h3>1. Introduction</h3>
+            <p>Welcome to DataMind AutoML as a Service. We respect your privacy and are committed to protecting your personal data and datasets ensuring compliance with leading global data protection regulations.</p>
+
+            <h3>2. Data Collection</h3>
+            <p>When you upload datasets or images to our APIs, we use this data strictly for inference and model training as requested. We do not use your proprietary dataset for foundation model training without explicit consent.</p>
+
+            <h3>3. Usage Logs & Cookies</h3>
+            <p>We log API usage for billing and rate-limiting purposes. Essential cookies are used to maintain session state for logged-in users.</p>
+
+            <h3>4. Data Retention</h3>
+            <p>Images uploaded for inference via the `predict` endpoint are retained temporarily within our `static/uploads` directory for debugging purposes and automatically cleaned up after 24 hours.</p>
+
+            <h3>5. Contact Us</h3>
+            <p>If you have any specific concerns about GDPR, CCPA, or other data privacy laws, please contact our Legal and Data Protection Officer via the <a href="/contact" class="highlight">Contact</a> page.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
